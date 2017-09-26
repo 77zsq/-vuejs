@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="style/weibo.css" rel="stylesheet" type="text/css" />
+    <script src="../vue.js"></script>
+    <script src="../vue-resource.js"></script>
+
+
+</head>
+
+
+<body>
+    <div class="znsArea">
+        <!--留言-->
+        <div class="takeComment">
+
+            <textarea name="textarea" class="takeTextField" id="tijiaoText" v-model="t1"></textarea>
+            <!-- 二 将留言中的内容跟着请求发往后台 -->
+
+            <div class="takeSbmComment">
+                <!-- 按钮 -->
+                <input type="button" class="inputs" value="" @click="add" />
+                <!-- 一 add方法 添加到methods中 -->
+                <span>(可按 Enter 回复)</span>
+            </div>
+        </div>
+        <!--已留-->
+        <div class="commentOn">
+            <!-- 没有数据的时候出现 暂无留言 -->
+            <div class="noContent" v-show="msgData.length==0">暂无留言</div>
+            <div class="messList">
+
+                <!-- 展示数据 -->
+                <div class="reply" v-for="item in msgData">
+                    <p class="replyContent">{{item.content}}</p>
+                    <p class="operation">
+                        <span class="replyTime">{{item.time}}</span>
+                        <span class="handle">
+                    	<a href="javascript:;" class="top">{{item.acc}}</a>
+                        <a href="javascript:;" class="down_icon">{{item.ref}}</a>
+                        <a href="javascript:;" class="cut">删除</a>
+                    </span>
+                    </p>
+                </div>
+            </div>
+            <div class="page">
+                <a href="javascript:;" class="active">1</a>
+                <a href="javascript:;">2</a>
+                <a href="javascript:;">3</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        var url = 'weibo.php';
+        new Vue({
+            el: '.znsArea', //vue控制的范围
+            data: { //vue的属性 用于展示的数据 
+                //v-model='t1' 本来要在这个data中定义，不定义也能用，但是最好定义
+                t1: '',
+                msgData: [] //msgData中放多个json  每个json是一条条数据
+
+            },
+            methods: {
+
+                add: function() {
+                    // alert(123);
+                    //1发送请求（交互，用到vue-resource.js），将textarea中的内容跟着请求发往后台
+                    //this是Vue的实例
+                    this.$http({
+                        url: url,
+                        data: { //给后台发送的数据（ act:'add'在接口中获取 content在textarea中用 v-model="t1"获取）
+                            act: 'add',
+                            content: this.t1 //content是t1中的内容 将textarea中的内容跟着请求发往后台
+                        },
+
+
+                    }).then(function(res) {
+                        console.log(res);
+                        console.log(res.data);
+                        var json = res.data;
+                        /* 返回数据后要将数据更新到 msgData: []中 然后vue会自动更新视图*/
+                        this.msgData.unshift({
+                            content: this.t1,
+                            time: json.time,
+                            acc: 0,
+                            ref: 0,
+                            id: json.id
+                        });
+                        /* 数据添加后要清空textarea */
+                        this.t1 = '';
+                    }, function() {
+
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
